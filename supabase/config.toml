@@ -1,0 +1,11 @@
+# supabase/config.toml (After)
+project_id = "esggsqfadxkdxtzqwccf"
+[functions.send-notification]
+enabled = true
+verify_jwt = true
+import_map = "./functions/send-notification/deno.json"
+entrypoint = "./functions/send-notification/index.ts"
+# ... (comments)
+
+[db]
+major_version = 15
