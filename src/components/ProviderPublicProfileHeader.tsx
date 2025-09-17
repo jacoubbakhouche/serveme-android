@@ -2,8 +2,8 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-// ## الخطوة 1: استيراد أيقونة BadgeCheck ##
-import { Star, MapPin, Phone, MessageSquare, BadgeCheck } from 'lucide-react';
+// ✨ 1. Import the new icons
+import { Star, MapPin, Phone, MessageSquare, BadgeCheck, User, Calendar } from 'lucide-react';
 import { Tables } from '@/integrations/supabase/types';
 import ProviderChat from './ProviderChat';
 import {
@@ -48,7 +48,6 @@ const ProviderPublicProfileHeader = ({ provider }: ProviderPublicProfileHeaderPr
             </Avatar>
             <div className="flex-1 text-center sm:text-right">
                 
-                {/* ## الخطوة 2: إضافة الشارة بجانب الاسم ## */}
                 <div className="flex items-center justify-center sm:justify-start gap-2">
                     <h2 className="text-2xl font-bold">{provider.full_name}</h2>
                     {provider.is_verified && (
@@ -58,41 +57,60 @@ const ProviderPublicProfileHeader = ({ provider }: ProviderPublicProfileHeaderPr
 
                 <div className="flex items-center justify-center sm:justify-start gap-2 my-2">
                     <div className="flex items-center gap-1">{renderStars(Number(provider.rating) || 0)}</div>
-                    <span className="text-sm text-muted-foreground">({provider.review_count || 0} تقييم)</span>
+                    <span className="text-sm text-muted-foreground">({provider.review_count || 0} reviews)</span>
                 </div>
-                <div className="flex items-center justify-center sm:justify-start gap-2 text-muted-foreground mb-3">
-                    <MapPin className="w-4 h-4" />
-                    <span>{provider.location || 'غير محدد'}</span>
+                
+                {/* ✨ 2. This is the main updated section */}
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-2 text-muted-foreground mb-3">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      <span>{provider.location || 'Not specified'}</span>
+                    </div>
+
+                    {/* Display Gender if available */}
+                    {provider.gender && (
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        <span>{provider.gender}</span>
+                      </div>
+                    )}
+
+                    {/* Display Age if available */}
+                    {provider.age && (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        <span>{provider.age} سنة</span>
+                      </div>
+                    )}
                 </div>
-                 <Badge variant="secondary">{provider.provider_category || 'غير مصنف'}</Badge>
+
+                <Badge variant="secondary">{provider.provider_category || 'Uncategorized'}</Badge>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-2 self-center sm:self-start">
-               <a href={`tel:${provider.phone}`}>
-  <Button disabled={!provider.phone} className="w-full sm:w-auto">
-    <Phone className="ml-2" />
-    {provider.phone ? 'اتصل الآن' : 'لا يوجد رقم'}
-  </Button>
-
-
-                </a>
-                {user && user.id !== provider.id && (
+              <a href={`tel:${provider.phone}`}>
+                <Button disabled={!provider.phone} className="w-full sm:w-auto">
+                  <Phone className="ml-2" />
+                  {provider.phone ? 'Call Now' : 'No Number'}
+                </Button>
+              </a>
+              {user && user.id !== provider.id && (
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" className="w-full sm:w-auto">
                           <MessageSquare className="ml-2" />
-                          تواصل
+                          Contact
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[425px] md:max-w-[600px] bg-card p-0 border-0">
-                      <ProviderChat receiverId={provider.id} receiverName={provider.full_name || 'مزود الخدمة'}/>
+                      <ProviderChat receiverId={provider.id} receiverName={provider.full_name || 'Service Provider'}/>
                     </DialogContent>
                   </Dialog>
-                )}
+              )}
             </div>
         </div>
         {provider.specialties && provider.specialties.length > 0 && (
             <div className="mt-4 pt-4 border-t">
-                <h4 className="font-semibold mb-2">التخصصات:</h4>
+                <h4 className="font-semibold mb-2">Specialties:</h4>
                 <div className="flex flex-wrap gap-2">
                 {provider.specialties.map((specialty, index) => (
                     <Badge key={index} variant="outline">{specialty}</Badge>
