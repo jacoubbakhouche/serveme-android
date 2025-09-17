@@ -10,6 +10,7 @@ import { algerianStates } from '@/constants/algerian-states';
 import { serviceCategories } from '@/constants/service-categories';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+// ✨ 1. Add age and gender to the data type
 type ProfileDataType = {
   full_name: string;
   phone: string;
@@ -19,6 +20,8 @@ type ProfileDataType = {
   specialties: string[];
   avatar_url: string;
   description: string;
+  age: number | null;
+  gender: string;
 };
 
 interface UserProfileCardProps {
@@ -75,8 +78,9 @@ const UserProfileCard = ({
   };
 
   const handleSave = () => {
-    const { full_name, phone, location, provider_category, description } = profileData;
-    onSave({ full_name, phone, location, provider_category, description }, avatarFile);
+    // ✨ 2. Include age and gender in the data sent to be saved
+    const { full_name, phone, location, provider_category, description, age, gender } = profileData;
+    onSave({ full_name, phone, location, provider_category, description, age, gender }, avatarFile);
     setAvatarFile(null);
   };
 
@@ -89,7 +93,7 @@ const UserProfileCard = ({
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <User className="w-5 h-5" />
-            ملفي الشخصي
+            My Profile
           </div>
           <Button variant="ghost" size="icon" onClick={onToggleEdit}>
             {isEditing ? <X className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
@@ -117,42 +121,71 @@ const UserProfileCard = ({
         {/* Form Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="full_name">الاسم الكامل</Label>
+            <Label htmlFor="full_name">Full Name</Label>
             <Input id="full_name" name="full_name" value={profileData.full_name} onChange={handleInputChange} disabled={!isEditing} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">رقم الهاتف</Label>
+            <Label htmlFor="phone">Phone Number</Label>
             <Input id="phone" name="phone" value={profileData.phone} onChange={handleInputChange} disabled={!isEditing} />
           </div>
 
+          {/* ✨ 3. Add the Age field */}
           <div className="space-y-2">
-            <Label htmlFor="location">الولاية</Label>
+            <Label htmlFor="age">Age</Label>
+            <Input 
+              id="age" 
+              name="age" 
+              type="number" 
+              value={profileData.age || ''} 
+              onChange={handleInputChange} 
+              disabled={!isEditing} 
+            />
+          </div>
+
+          {/* ✨ 4. Add the Gender field */}
+          <div className="space-y-2">
+            <Label htmlFor="gender">Gender</Label>
+            <Select
+              name="gender"
+              value={profileData.gender}
+              onValueChange={(value) => handleSelectChange('gender', value)}
+              disabled={!isEditing}
+            >
+              <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Male">Male</SelectItem>
+                <SelectItem value="Female">Female</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="location">State/Province</Label>
             <Select
               name="location"
               value={profileData.location}
-              onValueChange={(value) => handleSelectChange('location', value)}
+              onValue-change={(value) => handleSelectChange('location', value)}
               disabled={!isEditing}
             >
-              <SelectTrigger><SelectValue placeholder="اختر الولاية" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Select state/province" /></SelectTrigger>
               <SelectContent>
                 {algerianStates.map(state => (<SelectItem key={state} value={state}>{state}</SelectItem>))}
               </SelectContent>
             </Select>
           </div>
           
-          {/* ✅ ==================== هذا هو السطر الذي تم تعديله ==================== ✅ */}
           {(isProvider || isEditing) && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="provider_category">فئة الخدمة *</Label>
+                <Label htmlFor="provider_category">Service Category *</Label>
                 <Select
                   name="provider_category"
                   value={profileData.provider_category}
                   onValueChange={(value) => handleSelectChange('provider_category', value)}
                   disabled={!isEditing}
                 >
-                  <SelectTrigger><SelectValue placeholder="اختر فئة الخدمة" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select service category" /></SelectTrigger>
                   <SelectContent>
                     {serviceCategories.map(category => (<SelectItem key={category} value={category}>{category}</SelectItem>))}
                   </SelectContent>
@@ -160,28 +193,26 @@ const UserProfileCard = ({
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="description">الوصف *</Label>
+                <Label htmlFor="description">Description *</Label>
                 <Textarea
                   id="description"
                   name="description"
                   value={profileData.description}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  placeholder="صف خبراتك والخدمات التي تقدمها..."
+                  placeholder="Describe your experience and the services you offer..."
                   rows={4}
                 />
               </div>
             </>
           )}
-          {/* ✅ ============================== نهاية التعديل ============================== ✅ */}
-          
         </div>
       </CardContent>
 
       {isEditing && (
         <CardFooter>
           <Button onClick={handleSave} disabled={isSaving} className="w-full">
-            {isSaving ? (<Loader2 className="h-4 w-4 animate-spin" />) : (<><Save className="ml-2 h-4 w-4" /> حفظ التغييرات</>)}
+            {isSaving ? (<Loader2 className="h-4 w-4 animate-spin" />) : (<><Save className="ml-2 h-4 w-4" /> Save Changes</>)}
           </Button>
         </CardFooter>
       )}
