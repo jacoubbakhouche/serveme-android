@@ -13,6 +13,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Megaphone } from 'lucide-react';
 import ContactSupportButton from '@/components/ContactSupportButton';
 
+// ✨ 1. إضافة العمر والجنس إلى نوع البيانات
 type ProfileDataType = {
   full_name: string;
   phone: string;
@@ -22,6 +23,8 @@ type ProfileDataType = {
   specialties: string[];
   avatar_url: string;
   description: string;
+  age: number | null; // العمر
+  gender: string;   // الجنس
 };
 
 const ProfilePage = () => {
@@ -30,15 +33,19 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
+  
+  // ✨ 2. إضافة العمر والجنس إلى الحالة الأولية
   const [profileData, setProfileData] = useState<ProfileDataType>({
     full_name: '',
     phone: '',
     location: '',
-    provider_category: '', // تم التغيير إلى قيمة افتراضية فارغة
+    provider_category: '',
     is_provider: false,
     specialties: [],
     avatar_url: '',
     description: '',
+    age: null,
+    gender: '',
   });
 
   const { data: profile, isLoading, error } = useQuery({
@@ -47,31 +54,35 @@ const ProfilePage = () => {
       if (!user) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*') // select * سيجلب الأعمدة الجديدة تلقائيًا
         .eq('id', user.id)
-        .single();
+        .limit(1)
+        .maybeSingle();
       if (error) throw new Error(error.message);
-      return data;
+      return data ?? null;
     },
     enabled: !!user,
   });
 
   useEffect(() => {
-    if (profile) {
-      setProfileData({
-        full_name: profile.full_name || '',
-        phone: profile.phone || '',
-        location: profile.location || '',
-        provider_category: profile.provider_category || '',
-        is_provider: profile.is_provider || false,
-        specialties: profile.specialties || [],
-        avatar_url: profile.avatar_url || '',
-        description: profile.description || '',
-      });
-    }
+    if (!profile) return;
+    // ✨ 3. تحديث الحالة بالبيانات الجديدة عند جلبها
+    setProfileData({
+      full_name: profile.full_name || '',
+      phone: profile.phone || '',
+      location: profile.location || '',
+      provider_category: profile.provider_category || '',
+      is_provider: profile.is_provider || false,
+      specialties: profile.specialties || [],
+      avatar_url: profile.avatar_url || '',
+      description: profile.description || '',
+      age: profile.age || null,
+      gender: profile.gender || '',
+    });
   }, [profile]);
 
   const updateProfileMutation = useMutation({
+    // ✨ 4. تحديث النوع ليشمل البيانات الجديدة
     mutationFn: async (updatedProfile: Partial<ProfileDataType & { is_provider?: boolean }>) => {
       if (!user) throw new Error("User not authenticated");
       const { error } = await supabase
@@ -96,29 +107,31 @@ const ProfilePage = () => {
   });
 
   const handleSaveProfile = async (updatedData: Partial<ProfileDataType>, avatarFile: File | null) => {
-    if (!user || !profile) return;
+    if (!user) return;
 
-    // تم تغيير الشرط هنا ليعكس حالة المستخدم الحالية بدلاً من حالته القديمة
     if (profileData.is_provider || (isEditing && profile?.is_provider)) {
       const description = updatedData.description ?? profileData.description;
       const category = updatedData.provider_category ?? profileData.provider_category;
-      
+
       if (!description?.trim() || !category) {
         toast({
           title: "بيانات غير مكتملة",
           description: "يجب ملء حقلي الوصف وفئة الخدمة.",
           variant: "destructive",
         });
-        return; 
+        return;
       }
     }
 
+    // ✨ 5. إضافة العمر والجنس إلى البيانات التي سيتم إرسالها للحفظ
     let dataToSubmit: Partial<ProfileDataType> = {
       full_name: updatedData.full_name ?? profileData.full_name,
       phone: updatedData.phone ?? profileData.phone,
       location: updatedData.location ?? profileData.location,
       provider_category: updatedData.provider_category ?? profileData.provider_category,
       description: updatedData.description ?? profileData.description,
+      age: updatedData.age ?? profileData.age,
+      gender: updatedData.gender ?? profileData.gender,
     };
 
     if (avatarFile) {
@@ -138,28 +151,22 @@ const ProfilePage = () => {
 
     const { is_provider, ...dataToUpdate } = dataToSubmit;
     updateProfileMutation.mutate(dataToUpdate);
-};
+  };
 
-
-  // ✅ ==================== هذا هو الجزء الذي تم تعديله بالكامل ==================== ✅
   const toggleProviderStatus = (checked: boolean) => {
-    // إذا كان المستخدم يحاول إلغاء التفعيل، اسمح له بذلك مباشرة
     if (!checked) {
       setProfileData(prev => ({ ...prev, is_provider: false }));
       updateProfileMutation.mutate({ is_provider: false });
       return;
     }
 
-    // إذا كان المستخدم يحاول التفعيل...
     const isProfileComplete = profileData.description?.trim() && profileData.provider_category;
 
     if (isProfileComplete) {
-      // إذا كان الملف الشخصي مكتملاً، قم بالتفعيل مباشرة
       setProfileData(prev => ({ ...prev, is_provider: true }));
       updateProfileMutation.mutate({ is_provider: true });
     } else {
-      // إذا كان الملف الشخصي غير مكتمل، قم بتفعيل وضع التعديل وأظهر رسالة
-      setIsEditing(true); // <-- هذا هو المنطق الجديد!
+      setIsEditing(true);
       toast({
         title: "أكمل ملفك الشخصي أولاً",
         description: "لتفعيل حسابك كمزود، يرجى ملء حقلي الوصف والفئة ثم اضغط حفظ.",
@@ -167,8 +174,6 @@ const ProfilePage = () => {
       });
     }
   };
-  // ✅ ============================== نهاية التعديل ============================== ✅
-
 
   if (isLoading) return <LoadingSpinner />;
   if (error) return <div>حدث خطأ: {error.message}</div>;
