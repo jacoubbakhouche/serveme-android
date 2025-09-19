@@ -155,17 +155,17 @@ const CompleteProfilePage = () => {
           </div>
 
           <div>
-            <Label htmlFor="fullName" className="block text-sm font-medium">الاسم الكامل *</Label>
+            <Label htmlFor="fullName" className="block text-sm font-medium">الاسم الكامل </Label>
             <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="مثال: أحمد محمد" required />
           </div>
 
           <div>
-            <Label htmlFor="age" className="block text-sm font-medium">العمر *</Label>
+            <Label htmlFor="age" className="block text-sm font-medium">العمر </Label>
             <Input id="age" type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="مثال: 25" required />
           </div>
 
           <div>
-            <Label htmlFor="gender" className="block text-sm font-medium">الجنس *</Label>
+            <Label htmlFor="gender" className="block text-sm font-medium">الجنس </Label>
             <Select onValueChange={setGender} value={gender} required>
               <SelectTrigger><SelectValue placeholder="اختر الجنس..." /></SelectTrigger>
               <SelectContent>
