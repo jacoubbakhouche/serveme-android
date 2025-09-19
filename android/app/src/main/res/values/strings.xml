@@ -5,6 +5,6 @@
     <string name="package_name">com.serveme.app</string>
     <string name="custom_url_scheme">com.serveme.app</string>
     
-    <string name="facebook_app_id">YOUR_FACEBOOK_APP_ID</string>
-    <string name="fb_login_protocol_scheme">fbYOUR_FACEBOOK_APP_ID</string>
+    <string name="1511065490079406">YOUR_FACEBOOK_APP_ID</string>
+    <string name="fb_login_protocol_scheme">fb1511065490079406</string>
 </resources>
