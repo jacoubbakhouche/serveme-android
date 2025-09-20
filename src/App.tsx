@@ -7,6 +7,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
+// ==================== ✨ إضافات AdMob ✨ ====================
+import { AdMob } from '@capacitor-community/admob';
+import AdGate from './components/AdGate';
+// ==========================================================
+
 import LayoutRoute from "./components/LayoutRoute";
 import AddServicePage from "./pages/AddServicePage";
 import AuthPage from "./pages/AuthPage";
@@ -31,7 +36,6 @@ const queryClient = new QueryClient();
 const VAPID_PUBLIC_KEY =
   "BLkGz0mJpatxjHHUHfsHafwI6H8DqqVB6WQ6Bpy_GCNzl3o8Rw40jvRdlCcyifud2g-9jAdWO0PzFnyn8KFHQ2E";
 
-// ==================== ✨ تم التعديل هنا ✨ ====================
 const AppWrapper = () => {
   return (
     <Routes>
@@ -63,10 +67,6 @@ const AppWrapper = () => {
     </Routes>
   );
 };
-// ==========================================================
-
-
-// ... (بقية الكود يبقى كما هو بدون تغيير)
 
 const NotificationSetup = () => {
   const { user } = useAuth();
@@ -226,6 +226,31 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
+// ==================== ✨ تم التعديل هنا ✨ ====================
+// المكون الرئيسي للتطبيق
+const AppContent = () => {
+  // حالة جديدة لتتبع ما إذا كان المستخدم قد مر من بوابة الإعلان
+  const [isAdGatePassed, setIsAdGatePassed] = useState(false);
+
+  // تهيئة AdMob مرة واحدة عند تحميل التطبيق
+  useEffect(() => {
+    AdMob.initialize({});
+  }, []);
+
+  // إذا لم يمر المستخدم من بوابة الإعلان، يتم عرضها
+  if (!isAdGatePassed) {
+    return <AdGate onAdDismissed={() => setIsAdGatePassed(true)} />;
+  }
+
+  // بعد المرور من بوابة الإعلان، يتم عرض محتوى التطبيق الرئيسي
+  return (
+    <AuthProvider>
+      <NotificationSetup />
+      <AppWrapper />
+    </AuthProvider>
+  );
+};
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -233,10 +258,8 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AuthProvider>
-            <NotificationSetup />
-            <AppWrapper />
-          </AuthProvider>
+          {/* تم نقل محتوى التطبيق إلى مكون منفصل لتنظيم الكود */}
+          <AppContent />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
@@ -244,3 +267,4 @@ const App = () => {
 };
 
 export default App;
+// ==========================================================
