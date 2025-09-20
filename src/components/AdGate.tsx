@@ -40,7 +40,7 @@ const AdGate: React.FC<AdGateProps> = ({ onAdDismissed }) => {
     const lastAdTime = new Date(value).getTime();
     const currentTime = new Date().getTime();
     const hoursPassed = (currentTime - lastAdTime) / (1000 * 60 * 60);
-    return hoursPassed >= 24; // التحقق مما إذا مرت 24 ساعة
+    return hoursPassed >= 4; // التحقق مما إذا مرت 4 ساعة
   };
 
   const prepareAndShowInterstitial = async () => {
